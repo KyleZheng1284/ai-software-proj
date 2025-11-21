@@ -16,11 +16,15 @@ class User(db.Model):
     
     age = db.Column(db.Integer)
     gender = db.Column(db.String(20))
-    height = db.Column(db.Float)
-    weight = db.Column(db.Float)
+    height_feet = db.Column(db.Integer)
+    height_inches = db.Column(db.Integer)
+    weight_lbs = db.Column(db.Integer)
     
     fitness_level = db.Column(db.String(20))
-    primary_goal = db.Column(db.String(100))
+    activity_level = db.Column(db.String(30))  # sedentary, lightly_active, moderately_active, very_active, extra_active
+    target_weight_lbs = db.Column(db.Integer)
+    weight_goal_rate = db.Column(db.Float)  # lbs per week (positive for gain, negative for loss)
+    daily_calorie_goal = db.Column(db.Integer)
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -45,10 +49,14 @@ class User(db.Model):
             'last_name': self.last_name,
             'age': self.age,
             'gender': self.gender,
-            'height': self.height,
-            'weight': self.weight,
+            'height_feet': self.height_feet,
+            'height_inches': self.height_inches,
+            'weight_lbs': self.weight_lbs,
             'fitness_level': self.fitness_level,
-            'primary_goal': self.primary_goal,
+            'activity_level': self.activity_level,
+            'target_weight_lbs': self.target_weight_lbs,
+            'weight_goal_rate': self.weight_goal_rate,
+            'daily_calorie_goal': self.daily_calorie_goal,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }

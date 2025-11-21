@@ -1,10 +1,79 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime, timedelta
+import requests
 from app import db
 from app.models import Nutrition
 
+import os
+
+# USDA FoodData Central API - Free, no API key needed for basic access
+USDA_API_BASE = "https://api.nal.usda.gov/fdc/v1"
+# Get a free API key from: https://fdc.nal.usda.gov/api-key-signup.html
+USDA_API_KEY = os.environ.get('USDA_API_KEY', 'DEMO_KEY')  # DEMO_KEY has rate limits
+
 bp = Blueprint('nutrition', __name__, url_prefix='/api/nutrition')
+
+
+@bp.route('/food-search', methods=['GET'])
+@jwt_required()
+def search_foods():
+    query = request.args.get('q', '').strip()
+    
+    if not query or len(query) < 2:
+        return jsonify([]), 200
+    
+    try:
+        # Search USDA FoodData Central database
+        url = f"{USDA_API_BASE}/foods/search"
+        params = {
+            'api_key': USDA_API_KEY,
+            'query': query,
+            'pageSize': 10,  # Limit to 10 results
+            'dataType': ['Survey (FNDDS)', 'Foundation', 'SR Legacy']  # Most common foods
+        }
+        
+        response = requests.get(url, params=params, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        
+        # Format the results for our frontend
+        formatted_foods = []
+        for food in data.get('foods', []):
+            # Extract nutrition info
+            nutrients = {}
+            for nutrient in food.get('foodNutrients', []):
+                nutrient_name = nutrient.get('nutrientName', '').lower()
+                value = nutrient.get('value', 0)
+                
+                if 'energy' in nutrient_name or 'calori' in nutrient_name:
+                    nutrients['calories'] = round(value)
+                elif 'protein' in nutrient_name:
+                    nutrients['protein'] = round(value, 1)
+                elif 'carbohydrate' in nutrient_name:
+                    nutrients['carbs'] = round(value, 1)
+                elif 'total lipid' in nutrient_name or 'fat' in nutrient_name:
+                    nutrients['fats'] = round(value, 1)
+                elif 'fiber' in nutrient_name:
+                    nutrients['fiber'] = round(value, 1)
+            
+            formatted_food = {
+                'name': food.get('description', 'Unknown Food'),
+                'calories': nutrients.get('calories', 0),
+                'protein': nutrients.get('protein', 0),
+                'carbs': nutrients.get('carbs', 0),
+                'fats': nutrients.get('fats', 0),
+                'fiber': nutrients.get('fiber', 0),
+                'serving': '100g'
+            }
+            formatted_foods.append(formatted_food)
+        
+        return jsonify(formatted_foods), 200
+        
+    except requests.RequestException as e:
+        print(f"USDA API error: {e}")
+        # Return empty list on error
+        return jsonify([]), 200
 
 
 @bp.route('', methods=['GET'])
@@ -40,18 +109,34 @@ def create_nutrition_log():
     if not data or not data.get('meal_type') or not data.get('food_name') or not data.get('calories'):
         return jsonify({'error': 'Missing required fields'}), 400
     
+    # Convert empty strings to None for numeric fields
+    protein = data.get('protein')
+    protein = float(protein) if protein and protein != '' else None
+    
+    carbohydrates = data.get('carbohydrates')
+    carbohydrates = float(carbohydrates) if carbohydrates and carbohydrates != '' else None
+    
+    fats = data.get('fats')
+    fats = float(fats) if fats and fats != '' else None
+    
+    fiber = data.get('fiber')
+    fiber = float(fiber) if fiber and fiber != '' else None
+    
+    quantity = data.get('quantity', 1.0)
+    quantity = float(quantity) if quantity and quantity != '' else 1.0
+    
     nutrition = Nutrition(
         user_id=user_id,
         meal_type=data['meal_type'],
         food_name=data['food_name'],
         description=data.get('description'),
-        calories=data['calories'],
-        protein=data.get('protein'),
-        carbohydrates=data.get('carbohydrates'),
-        fats=data.get('fats'),
-        fiber=data.get('fiber'),
+        calories=int(data['calories']),
+        protein=protein,
+        carbohydrates=carbohydrates,
+        fats=fats,
+        fiber=fiber,
         serving_size=data.get('serving_size'),
-        quantity=data.get('quantity', 1.0),
+        quantity=quantity,
         date=datetime.fromisoformat(data['date']) if data.get('date') else datetime.utcnow()
     )
     

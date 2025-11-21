@@ -13,10 +13,14 @@ const Profile: React.FC = () => {
     last_name: user?.last_name || '',
     age: user?.age || '',
     gender: user?.gender || '',
-    height: user?.height || '',
-    weight: user?.weight || '',
+    height_feet: user?.height_feet || '5',
+    height_inches: user?.height_inches || '8',
+    weight_lbs: user?.weight_lbs || '150',
     fitness_level: user?.fitness_level || 'intermediate',
-    primary_goal: user?.primary_goal || 'general fitness',
+    activity_level: user?.activity_level || 'moderately_active',
+    target_weight_lbs: user?.target_weight_lbs || '140',
+    weight_goal_rate: user?.weight_goal_rate || '-1',
+    daily_calorie_goal: user?.daily_calorie_goal || '2000',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -51,6 +55,11 @@ const Profile: React.FC = () => {
     logout();
     navigate('/login');
   };
+
+  // Generate options
+  const feetOptions = Array.from({ length: 5 }, (_, i) => i + 3);
+  const inchesOptions = Array.from({ length: 12 }, (_, i) => i);
+  const weightOptions = Array.from({ length: 251 }, (_, i) => i + 50);
 
   return (
     <Layout>
@@ -143,25 +152,71 @@ const Profile: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="label">Height (cm)</label>
-                  <input
-                    type="number"
-                    name="height"
-                    value={formData.height}
-                    onChange={handleChange}
-                    className="input-field"
-                  />
+                  <label className="label">Height</label>
+                  <div className="flex gap-2">
+                    <select
+                      name="height_feet"
+                      value={formData.height_feet}
+                      onChange={handleChange}
+                      className="input-field flex-1"
+                    >
+                      {feetOptions.map(ft => (
+                        <option key={ft} value={ft}>{ft} ft</option>
+                      ))}
+                    </select>
+                    <select
+                      name="height_inches"
+                      value={formData.height_inches}
+                      onChange={handleChange}
+                      className="input-field flex-1"
+                    >
+                      {inchesOptions.map(inch => (
+                        <option key={inch} value={inch}>{inch} in</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 <div>
-                  <label className="label">Weight (kg)</label>
-                  <input
-                    type="number"
-                    name="weight"
-                    value={formData.weight}
+                  <label className="label">Current Weight (lbs)</label>
+                  <select
+                    name="weight_lbs"
+                    value={formData.weight_lbs}
                     onChange={handleChange}
                     className="input-field"
-                  />
+                  >
+                    {weightOptions.map(wt => (
+                      <option key={wt} value={wt}>{wt} lbs</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="label">Target Weight (lbs)</label>
+                  <select
+                    name="target_weight_lbs"
+                    value={formData.target_weight_lbs}
+                    onChange={handleChange}
+                    className="input-field"
+                  >
+                    {weightOptions.map(wt => (
+                      <option key={wt} value={wt}>{wt} lbs</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="label">Daily Calorie Goal</label>
+                  <select
+                    name="daily_calorie_goal"
+                    value={formData.daily_calorie_goal}
+                    onChange={handleChange}
+                    className="input-field"
+                  >
+                    {Array.from({ length: 31 }, (_, i) => (i + 12) * 100).map(cal => (
+                      <option key={cal} value={cal}>{cal} cal</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
@@ -179,18 +234,38 @@ const Profile: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="label">Primary Goal</label>
+                  <label className="label">Activity Level</label>
                   <select
-                    name="primary_goal"
-                    value={formData.primary_goal}
+                    name="activity_level"
+                    value={formData.activity_level}
                     onChange={handleChange}
                     className="input-field"
                   >
-                    <option value="weight loss">Weight Loss</option>
-                    <option value="muscle gain">Muscle Gain</option>
-                    <option value="general fitness">General Fitness</option>
-                    <option value="endurance">Endurance</option>
-                    <option value="flexibility">Flexibility</option>
+                    <option value="sedentary">Sedentary (little/no exercise)</option>
+                    <option value="lightly_active">Lightly Active (1-3 days/week)</option>
+                    <option value="moderately_active">Moderately Active (3-5 days/week)</option>
+                    <option value="very_active">Very Active (6-7 days/week)</option>
+                    <option value="extra_active">Extra Active (very active + physical job)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="label">Weight Goal Rate (lbs/week)</label>
+                  <select
+                    name="weight_goal_rate"
+                    value={formData.weight_goal_rate}
+                    onChange={handleChange}
+                    className="input-field"
+                  >
+                    <option value="-2">Lose 2 lbs/week (aggressive)</option>
+                    <option value="-1.5">Lose 1.5 lbs/week</option>
+                    <option value="-1">Lose 1 lb/week (recommended)</option>
+                    <option value="-0.5">Lose 0.5 lbs/week (gradual)</option>
+                    <option value="0">Maintain weight</option>
+                    <option value="0.5">Gain 0.5 lbs/week (gradual)</option>
+                    <option value="1">Gain 1 lb/week</option>
+                    <option value="1.5">Gain 1.5 lbs/week</option>
+                    <option value="2">Gain 2 lbs/week</option>
                   </select>
                 </div>
               </div>
@@ -253,17 +328,31 @@ const Profile: React.FC = () => {
                   </div>
                 )}
 
-                {user?.height && (
+                {user?.height_feet && (
                   <div>
                     <label className="text-sm text-gray-600">Height</label>
-                    <p className="font-medium">{user.height} cm</p>
+                    <p className="font-medium">{user.height_feet}' {user.height_inches || 0}"</p>
                   </div>
                 )}
 
-                {user?.weight && (
+                {user?.weight_lbs && (
                   <div>
-                    <label className="text-sm text-gray-600">Weight</label>
-                    <p className="font-medium">{user.weight} kg</p>
+                    <label className="text-sm text-gray-600">Current Weight</label>
+                    <p className="font-medium">{user.weight_lbs} lbs</p>
+                  </div>
+                )}
+
+                {user?.target_weight_lbs && (
+                  <div>
+                    <label className="text-sm text-gray-600">Target Weight</label>
+                    <p className="font-medium">{user.target_weight_lbs} lbs</p>
+                  </div>
+                )}
+
+                {user?.daily_calorie_goal && (
+                  <div>
+                    <label className="text-sm text-gray-600">Daily Calorie Goal</label>
+                    <p className="font-medium">{user.daily_calorie_goal} cal</p>
                   </div>
                 )}
 
@@ -271,13 +360,6 @@ const Profile: React.FC = () => {
                   <div>
                     <label className="text-sm text-gray-600">Fitness Level</label>
                     <p className="font-medium capitalize">{user.fitness_level}</p>
-                  </div>
-                )}
-
-                {user?.primary_goal && (
-                  <div>
-                    <label className="text-sm text-gray-600">Primary Goal</label>
-                    <p className="font-medium capitalize">{user.primary_goal}</p>
                   </div>
                 )}
               </div>
@@ -297,6 +379,3 @@ const Profile: React.FC = () => {
 };
 
 export default Profile;
-
-
-

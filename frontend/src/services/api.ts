@@ -91,6 +91,11 @@ export const nutritionService = {
     const response = await api.get('/nutrition/stats', { params: { days } });
     return response.data;
   },
+  
+  searchFoods: async (query: string) => {
+    const response = await api.get('/nutrition/food-search', { params: { q: query } });
+    return response.data;
+  },
 };
 
 export const goalService = {
@@ -168,6 +173,11 @@ export const communityService = {
     return response.data;
   },
   
+  commentOnPost: async (id: number, content: string) => {
+    const response = await api.post(`/community/posts/${id}/comment`, { content });
+    return response.data;
+  },
+  
   getChallenges: async (activeOnly?: boolean) => {
     const response = await api.get('/community/challenges', { params: { active: activeOnly } });
     return response.data;
@@ -180,6 +190,18 @@ export const communityService = {
   
   joinChallenge: async (id: number) => {
     const response = await api.post(`/community/challenges/${id}/join`);
+    return response.data;
+  },
+};
+
+export const dashboardService = {
+  getCalorieBalance: async () => {
+    const response = await api.get('/dashboard/calorie-balance');
+    return response.data;
+  },
+  
+  getWeeklySummary: async () => {
+    const response = await api.get('/dashboard/weekly-summary');
     return response.data;
   },
 };

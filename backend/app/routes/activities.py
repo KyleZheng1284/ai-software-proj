@@ -37,18 +37,28 @@ def create_activity():
     user_id = get_jwt_identity()
     data = request.get_json()
     
-    if not data or not data.get('activity_type') or not data.get('title'):
-        return jsonify({'error': 'Missing required fields'}), 400
+    if not data or not data.get('title') or not data.get('calories_burned'):
+        return jsonify({'error': 'Title and calories burned are required'}), 400
+    
+    # Convert empty strings to None for numeric fields
+    duration_minutes = data.get('duration_minutes')
+    duration_minutes = int(duration_minutes) if duration_minutes and duration_minutes != '' else None
+    
+    distance = data.get('distance')
+    distance = float(distance) if distance and distance != '' else None
+    
+    calories_burned = data.get('calories_burned')
+    calories_burned = int(calories_burned) if calories_burned and calories_burned != '' else None
     
     activity = Activity(
         user_id=user_id,
-        activity_type=data['activity_type'],
+        activity_type=data.get('activity_type', 'other'),
         title=data['title'],
         description=data.get('description'),
-        duration_minutes=data.get('duration_minutes'),
-        distance=data.get('distance'),
-        calories_burned=data.get('calories_burned'),
-        intensity=data.get('intensity'),
+        duration_minutes=duration_minutes,
+        distance=distance,
+        calories_burned=calories_burned,
+        intensity=data.get('intensity', 'moderate'),
         date=datetime.fromisoformat(data['date']) if data.get('date') else datetime.utcnow()
     )
     
@@ -91,11 +101,14 @@ def update_activity(activity_id):
     if 'description' in data:
         activity.description = data['description']
     if 'duration_minutes' in data:
-        activity.duration_minutes = data['duration_minutes']
+        val = data['duration_minutes']
+        activity.duration_minutes = int(val) if val and val != '' else None
     if 'distance' in data:
-        activity.distance = data['distance']
+        val = data['distance']
+        activity.distance = float(val) if val and val != '' else None
     if 'calories_burned' in data:
-        activity.calories_burned = data['calories_burned']
+        val = data['calories_burned']
+        activity.calories_burned = int(val) if val and val != '' else None
     if 'intensity' in data:
         activity.intensity = data['intensity']
     if 'date' in data:

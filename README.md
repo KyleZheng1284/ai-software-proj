@@ -1,97 +1,139 @@
 # AI-Assisted Fitness & Wellness Platform
 
-A smart fitness website that uses AI to help users track physical activity, nutrition, and health goals with personalized recommendations and insights.
+A comprehensive fitness tracking web application with AI-powered insights, personalized recommendations, and community features.
 
-## Features
+## ✨ Key Features
 
-### Core Functionality
-- **Activity Tracking**: Log workouts, exercises, and daily physical activities
-- **Nutrition Tracking**: Monitor calorie intake, meals, and nutritional information
-- **Health Goals**: Set and track personalized fitness and wellness goals
-- **Progress Visualization**: Interactive graphs and charts showing your progress over time
+### 📊 **Tracking & Analytics**
+- **Activity Tracking**: Log workouts with calories burned, duration, distance, and intensity
+- **Nutrition Tracking**: Track meals with USDA food database (400,000+ foods), macronutrients, and calorie goals
+- **Goal Management**: Create and monitor fitness goals with visual progress tracking
+- **Dashboard**: Real-time progress visualization with interactive charts and calorie balance calculator
 
-### AI-Powered Features
-- **Pattern Analysis**: AI analyzes your data to identify trends and patterns
-- **Personalized Recommendations**: Get customized meal plans, workout routines, and recovery strategies
-- **Smart Chatbot**: Virtual fitness coach that answers questions and provides encouragement
-- **Adaptive Feedback**: AI adjusts recommendations based on your progress and preferences
+### 🤖 **AI-Powered Insights**
+- **AI Fitness Coach**: Chat with an intelligent virtual coach powered by NVIDIA API
+- **Nutritional Analysis**: AI analyzes your daily intake and provides personalized food recommendations
+- **Smart Recommendations**: Get customized meal plans and workout routines based on your profile
+- **Motivational Messages**: Daily AI-generated encouragement and fitness tips
 
-### Community Features
-- **User Sharing**: Share tips and experiences with other users
-- **Group Challenges**: Participate in community fitness challenges
-- **Milestone Celebrations**: Celebrate achievements together
+### 👥 **Community Features**
+- **Posts & Tips**: Share fitness tips and experiences
+- **Challenges**: Join community fitness challenges
+- **Comments**: Engage with other users' posts
+- **Progress Sharing**: Celebrate milestones together
 
-## Tech Stack
+### 🎨 **Modern UI/UX**
+- Cartoonish, lively interface with smooth animations
+- Responsive design that works on all devices
+- Interactive floating emojis and gradient backgrounds
+- Real-time updates and progress indicators
 
-### Frontend
-- React 18 with TypeScript
-- Tailwind CSS for styling
-- Recharts for data visualization
-- Axios for API communication
-- React Router for navigation
+## 🚀 Quick Setup
 
-### Backend
+### Prerequisites
 - Python 3.10+
-- Flask with Flask-RESTful
-- SQLAlchemy ORM
-- JWT authentication
-- OpenAI API for chatbot
-- scikit-learn for ML pattern analysis
+- Node.js 16+
+- NVIDIA API Key (for AI features)
+- USDA API Key (for food database)
 
-### Database
-- SQLite (development)
-- PostgreSQL (production ready)
-
-## Setup Instructions
-
-### Local Development Setup
-
-**Quick Start**: See `SETUP_GUIDE.md` for detailed local setup instructions.
+### Installation
 
 ```bash
-# Backend
+# 1. Backend Setup
 cd backend
 python -m venv venv
-source venv/bin/activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
+
+# Create .env file (see backend/.env.example for template)
+cp .env.example .env
+# Add your NVIDIA_API_KEY and USDA_API_KEY
+
 python run.py init-db
 python run.py
 
-# Frontend (new terminal)
+# 2. Frontend Setup (new terminal)
 cd frontend
 npm install
 npm start
 ```
 
-Visit `http://localhost:3000`
+Visit **http://localhost:3000** 🎉
 
-### Deploy to Production (Make it Live!)
+📖 **For detailed setup instructions, see [`SETUP_GUIDE.md`](SETUP_GUIDE.md)**
 
-**Want others to test your app via a real URL?**
+## 🛠️ Tech Stack
 
-See deployment guides:
-- 📘 **`QUICK_DEPLOY.md`** - Get live in 15 minutes (recommended)
-- 📗 **`DEPLOYMENT_GUIDE.md`** - Comprehensive deployment guide
+**Frontend**: React 18 + TypeScript + Tailwind CSS + Recharts  
+**Backend**: Flask + SQLAlchemy + JWT + scikit-learn  
+**AI**: NVIDIA API (LLaMA 3.1)  
+**Database**: SQLite (dev) / PostgreSQL (prod)
 
-**Recommended Platforms (All FREE)**:
-- **Backend**: Render.com or Railway.app
-- **Frontend**: Netlify.com or Vercel.com
-- **Total Cost**: $0 for semester projects
+## 📁 Project Structure
 
-Your app will be accessible at URLs like:
-- Frontend: `https://your-fitness-app.netlify.app`
-- Backend: `https://your-api.onrender.com`
+```
+cpsc-ai/
+├── backend/          # Flask API
+│   ├── app/
+│   │   ├── models/   # Database models
+│   │   ├── routes/   # API endpoints
+│   │   └── services/ # Business logic & AI
+│   └── run.py
+├── frontend/         # React app
+│   └── src/
+│       ├── components/
+│       ├── pages/
+│       └── services/
+└── SETUP_GUIDE.md   # Detailed setup instructions
+```
 
-## Project Documentation
+## 🎯 Features Breakdown
 
-- **`README.md`** (this file) - Project overview
-- **`SETUP_GUIDE.md`** - Local development setup
-- **`QUICK_DEPLOY.md`** - Fast deployment guide
-- **`DEPLOYMENT_GUIDE.md`** - Detailed deployment instructions
-- **`PROJECT_OVERVIEW.md`** - Technical documentation
-- **`DEVELOPMENT.md`** - Development guidelines
+### Dashboard
+- Calorie balance calculator (BMR, TDEE, target calories)
+- Macronutrient breakdown pie chart
+- Activity and nutrition statistics
+- AI-generated motivational messages
 
-## License
+### Activities Page
+- Log activities with detailed metrics
+- Color-coded intensity levels
+- Floating animations and emoji indicators
+- Activity history with stats
+
+### Nutrition Page
+- USDA food database search integration
+- Daily nutrition summary cards
+- **AI Nutritional Analysis** - Get personalized recommendations
+- Macro tracking (protein, carbs, fats)
+
+### Goals Page
+- Visual progress bars with celebration animations
+- Goal type categories with emojis
+- Completion tracking and status filters
+- Target date monitoring
+
+### AI Coach
+- Interactive chat interface with mood-based avatars
+- Context-aware fitness advice
+- Meal and workout plan generation
+- Quick question buttons
+
+### Community
+- Create and share posts
+- Like and comment functionality
+- Participate in challenges
+- User engagement tracking
+
+## 🔐 Environment Variables
+
+Create `.env` files based on the examples:
+- `backend/.env.example` - Backend configuration
+- `frontend/.env` - Frontend API URL
+
+**Never commit `.env` files with real API keys!**
+
+## 📝 License
 
 MIT License - Academic Project
 

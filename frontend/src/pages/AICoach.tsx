@@ -20,7 +20,18 @@ const AICoach: React.FC = () => {
   const [mealPlan, setMealPlan] = useState<any[]>([]);
   const [showWorkoutPlan, setShowWorkoutPlan] = useState(false);
   const [workoutPlan, setWorkoutPlan] = useState<any[]>([]);
+  const [coachMood, setCoachMood] = useState<'happy' | 'thinking' | 'excited'>('happy');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Coach avatar expressions
+  const getCoachAvatar = () => {
+    const avatars = {
+      happy: '🤖',
+      thinking: '🤔',
+      excited: '🎉'
+    };
+    return avatars[coachMood];
+  };
 
   useEffect(() => {
     const welcomeMessage: Message = {
@@ -52,6 +63,7 @@ const AICoach: React.FC = () => {
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setLoading(true);
+    setCoachMood('thinking');
 
     try {
       const history = messages.map((m) => ({
@@ -68,6 +80,8 @@ const AICoach: React.FC = () => {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
+      setCoachMood('excited');
+      setTimeout(() => setCoachMood('happy'), 2000);
     } catch (error) {
       console.error('Failed to get AI response:', error);
       const errorMessage: Message = {
@@ -76,6 +90,7 @@ const AICoach: React.FC = () => {
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
+      setCoachMood('happy');
     } finally {
       setLoading(false);
     }
@@ -142,76 +157,117 @@ const AICoach: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <div className="card h-[600px] flex flex-col">
-              <div className="flex-1 overflow-y-auto mb-4 space-y-4">
+            <div className="card h-[600px] flex flex-col bg-gradient-to-br from-blue-50 to-purple-50">
+              <div className="flex-1 overflow-y-auto mb-4 space-y-4 p-2">
                 {messages.map((message, index) => (
                   <div
                     key={index}
-                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex items-end gap-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
+                    {message.role === 'assistant' && (
+                      <div className="text-4xl mb-1 animate-bounce">
+                        {getCoachAvatar()}
+                      </div>
+                    )}
+                    
                     <div
-                      className={`max-w-[80%] px-4 py-3 rounded-lg ${
+                      className={`max-w-[75%] px-5 py-4 rounded-2xl shadow-lg transform transition-all hover:scale-105 ${
                         message.role === 'user'
-                          ? 'bg-primary-600 text-white'
-                          : 'bg-gray-100 text-gray-900'
+                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-none'
+                          : 'bg-white text-gray-900 rounded-bl-none border-2 border-purple-200'
                       }`}
                     >
-                      <p className="whitespace-pre-wrap">{message.content}</p>
-                      <p className="text-xs mt-1 opacity-70">
+                      <p className="whitespace-pre-wrap font-medium">{message.content}</p>
+                      <p className={`text-xs mt-2 ${message.role === 'user' ? 'text-blue-100' : 'text-gray-400'}`}>
                         {message.timestamp.toLocaleTimeString()}
                       </p>
                     </div>
+                    
+                    {message.role === 'user' && (
+                      <div className="text-3xl mb-1">
+                        👤
+                      </div>
+                    )}
                   </div>
                 ))}
                 {loading && (
-                  <div className="flex justify-start">
-                    <div className="bg-gray-100 px-4 py-3 rounded-lg">
-                      <p className="text-gray-600">Thinking...</p>
+                  <div className="flex items-end gap-2 justify-start">
+                    <div className="text-4xl mb-1 animate-bounce">
+                      {getCoachAvatar()}
+                    </div>
+                    <div className="bg-white px-5 py-4 rounded-2xl rounded-bl-none shadow-lg border-2 border-purple-200">
+                      <div className="flex space-x-2">
+                        <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce"></div>
+                        <div className="w-3 h-3 bg-pink-400 rounded-full animate-bounce delay-100"></div>
+                        <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce delay-200"></div>
+                      </div>
                     </div>
                   </div>
                 )}
                 <div ref={messagesEndRef} />
               </div>
 
-              <form onSubmit={handleSend} className="flex space-x-2">
+              <form onSubmit={handleSend} className="flex space-x-2 bg-white p-3 rounded-lg shadow-lg">
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask me anything about fitness..."
-                  className="input-field flex-1"
+                  placeholder="Ask me anything about fitness... 💬"
+                  className="input-field flex-1 border-2 border-purple-200 focus:border-purple-400"
                   disabled={loading}
                 />
-                <button type="submit" className="btn-primary" disabled={loading || !input.trim()}>
-                  Send
+                <button 
+                  type="submit" 
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-lg font-bold hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all shadow-lg" 
+                  disabled={loading || !input.trim()}
+                >
+                  {loading ? '⏳' : '🚀'} Send
                 </button>
               </form>
             </div>
           </div>
 
           <div className="space-y-6">
-            <div className="card">
-              <h3 className="font-semibold mb-3">Quick Questions</h3>
+            <div className="card bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-200">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-2xl">⚡</span>
+                <h3 className="font-bold text-lg">Quick Questions</h3>
+              </div>
               <div className="space-y-2">
                 {quickQuestions.map((question, index) => (
                   <button
                     key={index}
                     onClick={() => handleQuickQuestion(question)}
-                    className="w-full text-left px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm transition-colors"
+                    className="w-full text-left px-4 py-3 bg-white hover:bg-yellow-50 rounded-xl text-sm transition-all transform hover:scale-105 shadow-md hover:shadow-lg border border-yellow-200 font-medium"
                   >
-                    {question}
+                    💬 {question}
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="card">
-              <h3 className="font-semibold mb-3">Tips</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>• Ask me about workouts, nutrition, or motivation</li>
-                <li>• Get personalized recommendations</li>
-                <li>• Request meal or workout plans</li>
-                <li>• I adapt my advice to your goals</li>
+            <div className="card bg-gradient-to-br from-green-50 to-teal-50 border-2 border-green-200">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-2xl">💡</span>
+                <h3 className="font-bold text-lg">Coach Tips</h3>
+              </div>
+              <ul className="space-y-3 text-sm">
+                <li className="flex items-start gap-2">
+                  <span className="text-xl">🏋️</span>
+                  <span className="text-gray-700 font-medium">Ask me about workouts, nutrition, or motivation</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-xl">📊</span>
+                  <span className="text-gray-700 font-medium">Get personalized recommendations</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-xl">🍽️</span>
+                  <span className="text-gray-700 font-medium">Request meal or workout plans</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-xl">🎯</span>
+                  <span className="text-gray-700 font-medium">I adapt my advice to your goals</span>
+                </li>
               </ul>
             </div>
           </div>

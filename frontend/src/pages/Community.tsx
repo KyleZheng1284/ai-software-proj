@@ -8,6 +8,8 @@ const Community: React.FC = () => {
   const [challenges, setChallenges] = useState<any[]>([]);
   const [showPostModal, setShowPostModal] = useState(false);
   const [showChallengeModal, setShowChallengeModal] = useState(false);
+  const [commentingOnPost, setCommentingOnPost] = useState<number | null>(null);
+  const [commentText, setCommentText] = useState('');
   const [postFormData, setPostFormData] = useState({
     title: '',
     content: '',
@@ -108,6 +110,24 @@ const Community: React.FC = () => {
     }
   };
 
+  const handleCommentClick = (postId: number) => {
+    setCommentingOnPost(commentingOnPost === postId ? null : postId);
+    setCommentText('');
+  };
+
+  const handleSubmitComment = async (postId: number) => {
+    if (!commentText.trim()) return;
+    
+    try {
+      await communityService.commentOnPost(postId, commentText);
+      setCommentText('');
+      setCommentingOnPost(null);
+      loadPosts();
+    } catch (error) {
+      console.error('Failed to comment on post:', error);
+    }
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -175,16 +195,75 @@ const Community: React.FC = () => {
                   <div className="flex items-center space-x-4 text-sm text-gray-600">
                     <button
                       onClick={() => handleLikePost(post.id)}
-                      className="flex items-center space-x-1 hover:text-primary-600"
+                      className="flex items-center space-x-1 hover:text-red-500 transition-colors"
                     >
                       <span>❤️</span>
                       <span>{post.likes_count}</span>
                     </button>
-                    <div className="flex items-center space-x-1">
+                    <button
+                      onClick={() => handleCommentClick(post.id)}
+                      className="flex items-center space-x-1 hover:text-blue-500 transition-colors"
+                    >
                       <span>💬</span>
                       <span>{post.comments_count}</span>
-                    </div>
+                    </button>
                   </div>
+                  
+                  {/* Display existing comments */}
+                  {post.comments && post.comments.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-gray-200 space-y-3">
+                      <p className="text-sm font-semibold text-gray-700">Comments:</p>
+                      {post.comments.map((comment: any) => (
+                        <div key={comment.id} className="flex space-x-3 bg-gray-50 rounded-lg p-3">
+                          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+                            {comment.username?.[0]?.toUpperCase() || 'U'}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2">
+                              <span className="font-semibold text-sm text-gray-900">{comment.username}</span>
+                              <span className="text-xs text-gray-500">
+                                {new Date(comment.created_at).toLocaleDateString()} {new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-700 mt-1">{comment.content}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Comment input box */}
+                  {commentingOnPost === post.id && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <div className="flex space-x-2">
+                        <input
+                          type="text"
+                          value={commentText}
+                          onChange={(e) => setCommentText(e.target.value)}
+                          placeholder="Write a comment..."
+                          className="input-field flex-1"
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              handleSubmitComment(post.id);
+                            }
+                          }}
+                        />
+                        <button
+                          onClick={() => handleSubmitComment(post.id)}
+                          className="btn-primary"
+                          disabled={!commentText.trim()}
+                        >
+                          Post
+                        </button>
+                        <button
+                          onClick={() => setCommentingOnPost(null)}
+                          className="btn-secondary"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))
             ) : (

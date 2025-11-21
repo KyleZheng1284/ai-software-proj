@@ -18,8 +18,10 @@ class CommunityPost(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    def to_dict(self):
-        return {
+    comments = db.relationship('Comment', backref='post', lazy='dynamic', cascade='all, delete-orphan')
+    
+    def to_dict(self, include_comments=False):
+        result = {
             'id': self.id,
             'user_id': self.user_id,
             'username': self.user.username if self.user else None,
@@ -30,6 +32,33 @@ class CommunityPost(db.Model):
             'comments_count': self.comments_count,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+        if include_comments:
+            result['comments'] = [comment.to_dict() for comment in self.comments.order_by(Comment.created_at.desc()).all()]
+        return result
+
+
+class Comment(db.Model):
+    __tablename__ = 'comments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('community_posts.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    content = db.Column(db.Text, nullable=False)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    user = db.relationship('User', backref='user_comments', lazy=True)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'post_id': self.post_id,
+            'user_id': self.user_id,
+            'username': self.user.username if self.user else None,
+            'content': self.content,
+            'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
 

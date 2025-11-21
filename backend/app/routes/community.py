@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
 from app import db
-from app.models import CommunityPost, Challenge
+from app.models import CommunityPost, Challenge, Comment
 
 bp = Blueprint('community', __name__, url_prefix='/api/community')
 
@@ -20,7 +20,7 @@ def get_posts():
     posts = query.order_by(CommunityPost.created_at.desc()).limit(limit).all()
     
     return jsonify({
-        'posts': [post.to_dict() for post in posts],
+        'posts': [post.to_dict(include_comments=True) for post in posts],
         'count': len(posts)
     }), 200
 
@@ -65,6 +65,40 @@ def like_post(post_id):
         'message': 'Post liked',
         'likes_count': post.likes_count
     }), 200
+
+
+@bp.route('/posts/<int:post_id>/comment', methods=['POST'])
+@jwt_required()
+def comment_on_post(post_id):
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    
+    if not data or not data.get('content'):
+        return jsonify({'error': 'Comment content is required'}), 400
+    
+    post = CommunityPost.query.get(post_id)
+    
+    if not post:
+        return jsonify({'error': 'Post not found'}), 404
+    
+    # Create the actual comment
+    comment = Comment(
+        post_id=post_id,
+        user_id=user_id,
+        content=data['content']
+    )
+    
+    # Increment comments count
+    post.comments_count += 1
+    
+    db.session.add(comment)
+    db.session.commit()
+    
+    return jsonify({
+        'message': 'Comment added successfully',
+        'comment': comment.to_dict(),
+        'comments_count': post.comments_count
+    }), 201
 
 
 @bp.route('/challenges', methods=['GET'])

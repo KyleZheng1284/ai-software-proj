@@ -12,10 +12,14 @@ const Register: React.FC = () => {
     last_name: '',
     age: '',
     gender: '',
-    height: '',
-    weight: '',
+    height_feet: '5',
+    height_inches: '8',
+    weight_lbs: '150',
     fitness_level: 'intermediate',
-    primary_goal: 'general fitness',
+    activity_level: 'moderately_active',
+    target_weight_lbs: '140',
+    weight_goal_rate: '-1',  // Default: lose 1 lb per week
+    daily_calorie_goal: '2000',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -53,6 +57,11 @@ const Register: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Generate options for dropdowns
+  const feetOptions = Array.from({ length: 5 }, (_, i) => i + 3); // 3-7 feet
+  const inchesOptions = Array.from({ length: 12 }, (_, i) => i); // 0-11 inches
+  const weightOptions = Array.from({ length: 251 }, (_, i) => i + 50); // 50-300 lbs
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center px-4 py-8">
@@ -167,25 +176,71 @@ const Register: React.FC = () => {
             </div>
 
             <div>
-              <label className="label">Height (cm)</label>
-              <input
-                type="number"
-                name="height"
-                value={formData.height}
-                onChange={handleChange}
-                className="input-field"
-              />
+              <label className="label">Height</label>
+              <div className="flex gap-2">
+                <select
+                  name="height_feet"
+                  value={formData.height_feet}
+                  onChange={handleChange}
+                  className="input-field flex-1"
+                >
+                  {feetOptions.map(ft => (
+                    <option key={ft} value={ft}>{ft} ft</option>
+                  ))}
+                </select>
+                <select
+                  name="height_inches"
+                  value={formData.height_inches}
+                  onChange={handleChange}
+                  className="input-field flex-1"
+                >
+                  {inchesOptions.map(inch => (
+                    <option key={inch} value={inch}>{inch} in</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div>
-              <label className="label">Weight (kg)</label>
-              <input
-                type="number"
-                name="weight"
-                value={formData.weight}
+              <label className="label">Current Weight (lbs)</label>
+              <select
+                name="weight_lbs"
+                value={formData.weight_lbs}
                 onChange={handleChange}
                 className="input-field"
-              />
+              >
+                {weightOptions.map(wt => (
+                  <option key={wt} value={wt}>{wt} lbs</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="label">Target Weight (lbs)</label>
+              <select
+                name="target_weight_lbs"
+                value={formData.target_weight_lbs}
+                onChange={handleChange}
+                className="input-field"
+              >
+                {weightOptions.map(wt => (
+                  <option key={wt} value={wt}>{wt} lbs</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="label">Daily Calorie Goal</label>
+              <select
+                name="daily_calorie_goal"
+                value={formData.daily_calorie_goal}
+                onChange={handleChange}
+                className="input-field"
+              >
+                {Array.from({ length: 31 }, (_, i) => (i + 12) * 100).map(cal => (
+                  <option key={cal} value={cal}>{cal} cal</option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -203,18 +258,38 @@ const Register: React.FC = () => {
             </div>
 
             <div>
-              <label className="label">Primary Goal</label>
+              <label className="label">Activity Level</label>
               <select
-                name="primary_goal"
-                value={formData.primary_goal}
+                name="activity_level"
+                value={formData.activity_level}
                 onChange={handleChange}
                 className="input-field"
               >
-                <option value="weight loss">Weight Loss</option>
-                <option value="muscle gain">Muscle Gain</option>
-                <option value="general fitness">General Fitness</option>
-                <option value="endurance">Endurance</option>
-                <option value="flexibility">Flexibility</option>
+                <option value="sedentary">Sedentary (little/no exercise)</option>
+                <option value="lightly_active">Lightly Active (1-3 days/week)</option>
+                <option value="moderately_active">Moderately Active (3-5 days/week)</option>
+                <option value="very_active">Very Active (6-7 days/week)</option>
+                <option value="extra_active">Extra Active (very active + physical job)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="label">Weight Goal Rate (lbs/week)</label>
+              <select
+                name="weight_goal_rate"
+                value={formData.weight_goal_rate}
+                onChange={handleChange}
+                className="input-field"
+              >
+                <option value="-2">Lose 2 lbs/week (aggressive)</option>
+                <option value="-1.5">Lose 1.5 lbs/week</option>
+                <option value="-1">Lose 1 lb/week (recommended)</option>
+                <option value="-0.5">Lose 0.5 lbs/week (gradual)</option>
+                <option value="0">Maintain weight</option>
+                <option value="0.5">Gain 0.5 lbs/week (gradual)</option>
+                <option value="1">Gain 1 lb/week</option>
+                <option value="1.5">Gain 1.5 lbs/week</option>
+                <option value="2">Gain 2 lbs/week</option>
               </select>
             </div>
           </div>
@@ -242,6 +317,3 @@ const Register: React.FC = () => {
 };
 
 export default Register;
-
-
-

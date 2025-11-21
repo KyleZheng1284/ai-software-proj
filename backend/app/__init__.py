@@ -35,7 +35,7 @@ def create_app(config_name='default'):
         # Development: Allow all origins
         CORS(app)
     
-    from app.routes import auth, activities, nutrition, goals, ai, community
+    from app.routes import auth, activities, nutrition, goals, ai, community, dashboard
     
     app.register_blueprint(auth.bp)
     app.register_blueprint(activities.bp)
@@ -43,6 +43,7 @@ def create_app(config_name='default'):
     app.register_blueprint(goals.bp)
     app.register_blueprint(ai.bp)
     app.register_blueprint(community.bp)
+    app.register_blueprint(dashboard.bp)
     
     @app.route('/api/health')
     def health_check():

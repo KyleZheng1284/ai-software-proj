@@ -9,10 +9,14 @@ interface User {
   last_name?: string;
   age?: number;
   gender?: string;
-  height?: number;
-  weight?: number;
+  height_feet?: number;
+  height_inches?: number;
+  weight_lbs?: number;
   fitness_level?: string;
-  primary_goal?: string;
+  activity_level?: string;
+  target_weight_lbs?: number;
+  weight_goal_rate?: number;
+  daily_calorie_goal?: number;
 }
 
 interface AuthContextType {

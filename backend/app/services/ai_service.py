@@ -1,15 +1,16 @@
 import os
 from datetime import datetime, timedelta
 from typing import List, Dict, Any
-import openai
+import requests
 from app.models import Activity, Nutrition, Goal
 
 
 class AIService:
     def __init__(self):
-        self.api_key = os.environ.get('OPENAI_API_KEY')
-        if self.api_key:
-            openai.api_key = self.api_key
+        self.api_key = os.environ.get('NVIDIA_API_KEY')
+        self.api_url = "https://integrate.api.nvidia.com/v1/chat/completions"
+        # Try the exact model name format mentioned by the user
+        self.model = "meta/llama-3.1-8b-instruct"
     
     def chat_with_coach(self, user, user_message: str, conversation_history: List[Dict] = None) -> str:
         if not self.api_key:
@@ -40,17 +41,31 @@ class AIService:
             
             messages.append({"role": "user", "content": user_message})
             
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=messages,
-                max_tokens=300,
-                temperature=0.7
-            )
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json"
+            }
             
-            return response.choices[0].message.content
+            payload = {
+                "model": self.model,
+                "messages": messages,
+                "max_tokens": 300,
+                "temperature": 0.7
+            }
+            
+            response = requests.post(self.api_url, json=payload, headers=headers)
+            response.raise_for_status()
+            
+            result = response.json()
+            return result['choices'][0]['message']['content']
         
         except Exception as e:
-            print(f"OpenAI API error: {e}")
+            print(f"NVIDIA API error: {e}")
+            print(f"Using model: {self.model}")
+            print(f"API URL: {self.api_url}")
+            if hasattr(e, 'response') and e.response is not None:
+                print(f"Response status: {e.response.status_code}")
+                print(f"Response text: {e.response.text}")
             return self._fallback_chat_response(user, user_message)
     
     def generate_recommendations(self, user) -> Dict[str, Any]:
@@ -83,7 +98,17 @@ class AIService:
         return patterns
     
     def generate_meal_plan(self, user, days: int = 7) -> List[Dict[str, Any]]:
-        goal = user.primary_goal or 'general fitness'
+        # Determine goal from weight_goal_rate
+        if user.weight_goal_rate is not None:
+            if user.weight_goal_rate < 0:
+                goal = 'weight_loss'
+            elif user.weight_goal_rate > 0:
+                goal = 'muscle_gain'
+            else:
+                goal = 'maintenance'
+        else:
+            goal = 'general fitness'
+        
         fitness_level = user.fitness_level or 'intermediate'
         
         meal_plan = []
@@ -131,7 +156,17 @@ class AIService:
     
     def generate_workout_plan(self, user, days: int = 7) -> List[Dict[str, Any]]:
         fitness_level = user.fitness_level or 'intermediate'
-        goal = user.primary_goal or 'general fitness'
+        
+        # Determine goal from weight_goal_rate
+        if user.weight_goal_rate is not None:
+            if user.weight_goal_rate < 0:
+                goal = 'weight_loss'
+            elif user.weight_goal_rate > 0:
+                goal = 'muscle_gain'
+            else:
+                goal = 'maintenance'
+        else:
+            goal = 'general fitness'
         
         workout_templates = {
             'beginner': [
@@ -205,11 +240,30 @@ class AIService:
         return random.choice(messages)
     
     def _build_user_context(self, user) -> str:
+        # Build weight goal description
+        weight_goal = 'Not specified'
+        if user.target_weight_lbs and user.weight_lbs:
+            diff = user.target_weight_lbs - user.weight_lbs
+            if diff < 0:
+                weight_goal = f'Lose {abs(diff)} lbs (currently {user.weight_lbs} lbs, target {user.target_weight_lbs} lbs)'
+            elif diff > 0:
+                weight_goal = f'Gain {diff} lbs (currently {user.weight_lbs} lbs, target {user.target_weight_lbs} lbs)'
+            else:
+                weight_goal = f'Maintain weight at {user.weight_lbs} lbs'
+            
+            if user.weight_goal_rate:
+                rate_desc = f'{abs(user.weight_goal_rate)} lbs/week'
+                weight_goal += f' at {rate_desc}'
+        
         context = f"""
         Name: {user.first_name or user.username}
-        Fitness Level: {user.fitness_level or 'Not specified'}
-        Primary Goal: {user.primary_goal or 'Not specified'}
         Age: {user.age or 'Not specified'}
+        Gender: {user.gender or 'Not specified'}
+        Fitness Level: {user.fitness_level or 'Not specified'}
+        Activity Level: {user.activity_level or 'Not specified'}
+        Weight Goal: {weight_goal}
+        Current Weight: {user.weight_lbs or 'Not specified'} lbs
+        Height: {user.height_feet or '?'} ft {user.height_inches or '?'} in
         """
         return context
     
@@ -347,7 +401,7 @@ class AIService:
         consistency_score = (unique_dates / days_in_period * 100) if days_in_period > 0 else 0
         
         if consistency_score >= 70:
-            message = 'Excellent consistency! You're building great habits'
+            message = "Excellent consistency! You're building great habits"
         elif consistency_score >= 40:
             message = 'Good consistency. Try to increase frequency for better results'
         else:

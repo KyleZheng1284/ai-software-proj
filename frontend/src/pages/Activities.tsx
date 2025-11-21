@@ -17,6 +17,26 @@ const Activities: React.FC = () => {
   });
   const [loading, setLoading] = useState(true);
 
+  const activityTypeEmojis: Record<string, string> = {
+    cardio: '🏃‍♂️',
+    strength: '💪',
+    flexibility: '🧘',
+    sports: '⚽',
+    other: '🎯',
+  };
+
+  const intensityColors: Record<string, string> = {
+    low: 'from-green-400 to-emerald-500',
+    moderate: 'from-yellow-400 to-orange-500',
+    high: 'from-red-400 to-pink-500',
+  };
+
+  const intensityEmojis: Record<string, string> = {
+    low: '😌',
+    moderate: '😅',
+    high: '🔥',
+  };
+
   useEffect(() => {
     loadActivities();
   }, []);
@@ -66,75 +86,115 @@ const Activities: React.FC = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">Activities</h1>
-          <button onClick={() => setShowModal(true)} className="btn-primary">
-            + Log Activity
-          </button>
-        </div>
+      <div className="relative min-h-[calc(100vh-80px)] overflow-hidden rounded-xl bg-gradient-to-br from-orange-50 via-yellow-50 to-green-50 p-6">
+        {/* Floating Activity Emojis */}
+        <div className="absolute top-1/4 left-1/4 text-5xl animate-float-1">🏃‍♂️</div>
+        <div className="absolute top-1/2 right-1/4 text-6xl animate-float-2">💪</div>
+        <div className="absolute bottom-1/4 left-1/3 text-4xl animate-float-3">⚡</div>
+        <div className="absolute top-1/3 right-1/3 text-7xl animate-float-4">🔥</div>
+        <div className="absolute bottom-1/3 right-1/4 text-5xl animate-float-1">🎯</div>
 
-        {loading ? (
-          <div className="text-center py-8">Loading activities...</div>
-        ) : activities.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {activities.map((activity) => (
-              <div key={activity.id} className="card hover:shadow-lg transition-shadow">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <span className="inline-block px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-medium">
-                      {activity.activity_type}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => handleDelete(activity.id)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    ✕
-                  </button>
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{activity.title}</h3>
-                {activity.description && (
-                  <p className="text-gray-600 text-sm mb-3">{activity.description}</p>
-                )}
-                <div className="space-y-2 text-sm">
-                  {activity.duration_minutes && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Duration:</span>
-                      <span className="font-medium">{activity.duration_minutes} min</span>
-                    </div>
-                  )}
-                  {activity.distance && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Distance:</span>
-                      <span className="font-medium">{activity.distance} km</span>
-                    </div>
-                  )}
-                  {activity.calories_burned && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Calories:</span>
-                      <span className="font-medium">{activity.calories_burned} kcal</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Intensity:</span>
-                    <span className="font-medium capitalize">{activity.intensity}</span>
-                  </div>
-                  <div className="text-gray-500 text-xs mt-3">
-                    {new Date(activity.date).toLocaleDateString()}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="card text-center py-12">
-            <p className="text-gray-500 mb-4">No activities logged yet</p>
-            <button onClick={() => setShowModal(true)} className="btn-primary">
-              Log Your First Activity
+        <div className="relative z-10 space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-4xl font-extrabold text-gray-900 mb-2">Your Activities</h1>
+              <p className="text-gray-600">Track every move, celebrate every milestone!</p>
+            </div>
+            <button 
+              onClick={() => setShowModal(true)} 
+              className="btn-primary flex items-center space-x-2 px-6 py-3 text-lg font-semibold bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <span className="text-2xl">+</span>
+              <span>Log Activity</span>
             </button>
           </div>
-        )}
+
+          {loading ? (
+            <div className="text-center py-8 text-lg font-medium">
+              <span className="inline-block animate-spin text-4xl mb-2">⚡</span>
+              <p>Loading your activities...</p>
+            </div>
+          ) : activities.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {activities.map((activity) => (
+                <div 
+                  key={activity.id} 
+                  className="card bg-white/90 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 hover:rotate-1"
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-4xl">{activityTypeEmojis[activity.activity_type] || '🎯'}</span>
+                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r ${intensityColors[activity.intensity] || intensityColors.moderate} text-white shadow-md`}>
+                        {intensityEmojis[activity.intensity]} {activity.activity_type}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleDelete(activity.id)}
+                      className="text-red-500 hover:text-red-700 text-xl font-bold hover:scale-125 transition-transform"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  
+                  <h3 className="text-xl font-bold mb-2 text-gray-900">{activity.title}</h3>
+                  {activity.description && (
+                    <p className="text-gray-600 text-sm mb-3 italic">{activity.description}</p>
+                  )}
+                  
+                  <div className="space-y-2 bg-gradient-to-br from-gray-50 to-gray-100 p-3 rounded-lg">
+                    {activity.duration_minutes && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600 flex items-center">
+                          <span className="mr-1">⏱️</span> Duration:
+                        </span>
+                        <span className="font-bold text-primary-600">{activity.duration_minutes} min</span>
+                      </div>
+                    )}
+                    {activity.distance && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600 flex items-center">
+                          <span className="mr-1">📏</span> Distance:
+                        </span>
+                        <span className="font-bold text-blue-600">{activity.distance} km</span>
+                      </div>
+                    )}
+                    {activity.calories_burned && (
+                      <div className="flex justify-between items-center bg-gradient-to-r from-orange-100 to-red-100 p-2 rounded-lg">
+                        <span className="text-gray-700 flex items-center font-semibold">
+                          <span className="mr-1">🔥</span> Calories:
+                        </span>
+                        <span className="font-extrabold text-red-600 text-lg">{activity.calories_burned} kcal</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 flex items-center">
+                        <span className="mr-1">{intensityEmojis[activity.intensity]}</span> Intensity:
+                      </span>
+                      <span className="font-bold capitalize text-purple-600">{activity.intensity}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3 flex items-center justify-between bg-gray-100 px-3 py-2 rounded-lg">
+                    <span className="text-xs text-gray-500 font-medium">📅 {new Date(activity.date).toLocaleDateString()}</span>
+                    <span className="text-xs text-gray-500 font-medium">🕐 {new Date(activity.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="card bg-white/90 backdrop-blur-sm text-center py-16 border-4 border-dashed border-gray-300">
+              <div className="text-7xl mb-4 animate-bounce">🏃‍♂️</div>
+              <p className="text-gray-600 text-xl mb-6 font-medium">No activities yet - Time to get moving!</p>
+              <button 
+                onClick={() => setShowModal(true)} 
+                className="btn-primary bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shadow-lg hover:shadow-xl transition-all duration-300 text-lg px-8 py-3"
+              >
+                <span className="text-2xl mr-2">🚀</span>
+                Log Your First Activity
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {showModal && (
@@ -148,36 +208,35 @@ const Activities: React.FC = () => {
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="label">Activity Type</label>
-                <select
-                  value={formData.activity_type}
-                  onChange={(e) => setFormData({ ...formData, activity_type: e.target.value })}
-                  className="input-field"
-                >
-                  <option value="cardio">Cardio</option>
-                  <option value="strength">Strength Training</option>
-                  <option value="flexibility">Flexibility</option>
-                  <option value="sports">Sports</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div>
-                <label className="label">Title</label>
+                <label className="label">Title *</label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="input-field"
+                  placeholder="e.g., Morning Run"
                   required
                 />
               </div>
               <div>
-                <label className="label">Description</label>
+                <label className="label">Calories Burned *</label>
+                <input
+                  type="number"
+                  value={formData.calories_burned}
+                  onChange={(e) => setFormData({ ...formData, calories_burned: e.target.value })}
+                  className="input-field"
+                  placeholder="e.g., 250"
+                  required
+                />
+              </div>
+              <div>
+                <label className="label">Description (optional)</label>
                 <input
                   type="text"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="input-field"
+                  placeholder="Additional details..."
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -188,6 +247,7 @@ const Activities: React.FC = () => {
                     value={formData.duration_minutes}
                     onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
                     className="input-field"
+                    placeholder="Optional"
                   />
                 </div>
                 <div>
@@ -198,18 +258,24 @@ const Activities: React.FC = () => {
                     value={formData.distance}
                     onChange={(e) => setFormData({ ...formData, distance: e.target.value })}
                     className="input-field"
+                    placeholder="Optional"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="label">Calories Burned</label>
-                  <input
-                    type="number"
-                    value={formData.calories_burned}
-                    onChange={(e) => setFormData({ ...formData, calories_burned: e.target.value })}
+                  <label className="label">Activity Type</label>
+                  <select
+                    value={formData.activity_type}
+                    onChange={(e) => setFormData({ ...formData, activity_type: e.target.value })}
                     className="input-field"
-                  />
+                  >
+                    <option value="cardio">Cardio</option>
+                    <option value="strength">Strength Training</option>
+                    <option value="flexibility">Flexibility</option>
+                    <option value="sports">Sports</option>
+                    <option value="other">Other</option>
+                  </select>
                 </div>
                 <div>
                   <label className="label">Intensity</label>
