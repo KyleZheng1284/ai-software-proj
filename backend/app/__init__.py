@@ -1,4 +1,3 @@
-import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
@@ -19,21 +18,15 @@ def create_app(config_name='default'):
     jwt.init_app(app)
     migrate.init_app(app, db)
     
-    # CORS configuration - allows local development and production
-    if os.environ.get('FLASK_ENV') == 'production':
-        # Production: Restrict to your frontend domain
-        CORS(app, resources={
-            r"/api/*": {
-                "origins": [
-                    "https://*.netlify.app",
-                    "https://*.vercel.app",
-                    "http://localhost:3000"
-                ]
-            }
-        })
-    else:
-        # Development: Allow all origins
-        CORS(app)
+    # CORS configuration - allow all origins for simplicity
+    # In production, you may want to restrict this to specific domains
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": "*",
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })
     
     from app.routes import auth, activities, nutrition, goals, ai, community, dashboard
     
@@ -44,6 +37,10 @@ def create_app(config_name='default'):
     app.register_blueprint(ai.bp)
     app.register_blueprint(community.bp)
     app.register_blueprint(dashboard.bp)
+    
+    @app.route('/')
+    def root():
+        return {'status': 'ok', 'message': 'AI Fitness Platform API - Use /api/* endpoints'}
     
     @app.route('/api/health')
     def health_check():
