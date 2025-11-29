@@ -28,15 +28,55 @@ def create_app(config_name='default'):
         }
     })
     
-    from app.routes import auth, activities, nutrition, goals, ai, community, dashboard
+    # Import and register blueprints with error handling
+    try:
+        from app.routes import auth
+        app.register_blueprint(auth.bp)
+        print("Registered: auth")
+    except Exception as e:
+        print(f"Failed to register auth: {e}")
     
-    app.register_blueprint(auth.bp)
-    app.register_blueprint(activities.bp)
-    app.register_blueprint(nutrition.bp)
-    app.register_blueprint(goals.bp)
-    app.register_blueprint(ai.bp)
-    app.register_blueprint(community.bp)
-    app.register_blueprint(dashboard.bp)
+    try:
+        from app.routes import activities
+        app.register_blueprint(activities.bp)
+        print("Registered: activities")
+    except Exception as e:
+        print(f"Failed to register activities: {e}")
+    
+    try:
+        from app.routes import nutrition
+        app.register_blueprint(nutrition.bp)
+        print("Registered: nutrition")
+    except Exception as e:
+        print(f"Failed to register nutrition: {e}")
+    
+    try:
+        from app.routes import goals
+        app.register_blueprint(goals.bp)
+        print("Registered: goals")
+    except Exception as e:
+        print(f"Failed to register goals: {e}")
+    
+    try:
+        from app.routes import ai
+        app.register_blueprint(ai.bp)
+        print("Registered: ai")
+    except Exception as e:
+        print(f"Failed to register ai: {e}")
+    
+    try:
+        from app.routes import community
+        app.register_blueprint(community.bp)
+        print("Registered: community")
+    except Exception as e:
+        print(f"Failed to register community: {e}")
+    
+    try:
+        from app.routes import dashboard
+        app.register_blueprint(dashboard.bp)
+        print("Registered: dashboard")
+    except Exception as e:
+        print(f"Failed to register dashboard: {e}")
     
     @app.route('/')
     def root():
