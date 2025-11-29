@@ -90,6 +90,12 @@ def create_app(config_name='default'):
     with app.app_context():
         db.create_all()
     
+    # Debug: Print all registered routes
+    print("\n=== REGISTERED ROUTES ===")
+    for rule in app.url_map.iter_rules():
+        print(f"  {rule.methods} {rule.rule}")
+    print("=========================\n")
+    
     return app
 
 
