@@ -46,6 +46,10 @@ def create_app(config_name='default'):
     def health_check():
         return {'status': 'healthy', 'message': 'AI Fitness Platform API is running'}
     
+    # Auto-create database tables on startup
+    with app.app_context():
+        db.create_all()
+    
     return app
 
 
