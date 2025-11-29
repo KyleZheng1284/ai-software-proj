@@ -86,6 +86,17 @@ def create_app(config_name='default'):
     def health_check():
         return {'status': 'healthy', 'message': 'AI Fitness Platform API is running'}
     
+    # Simple test route to verify AI blueprint
+    @app.route('/api/test-ai')
+    def test_ai():
+        return {'status': 'ok', 'ai_blueprint': 'working'}
+    
+    @app.errorhandler(404)
+    def handle_404(e):
+        from flask import request
+        print(f"404 ERROR: {request.method} {request.path} - Full URL: {request.url}")
+        return {'error': 'Not Found', 'path': request.path, 'method': request.method}, 404
+    
     # Auto-create database tables on startup
     with app.app_context():
         db.create_all()
