@@ -9,11 +9,17 @@ class AIService:
     def __init__(self):
         self.api_key = os.environ.get('NVIDIA_API_KEY')
         self.api_url = "https://integrate.api.nvidia.com/v1/chat/completions"
-        # Try the exact model name format mentioned by the user
         self.model = "meta/llama-3.1-8b-instruct"
+        print(f"[AIService] Initialized with API key: {'SET' if self.api_key else 'NOT SET'}")
+        print(f"[AIService] API URL: {self.api_url}")
+        print(f"[AIService] Model: {self.model}")
     
     def chat_with_coach(self, user, user_message: str, conversation_history: List[Dict] = None) -> str:
+        print(f"\n[AIService.chat_with_coach] Starting...")
+        print(f"[AIService] API Key available: {bool(self.api_key)}")
+        
         if not self.api_key:
+            print("[AIService] No API key - using fallback response")
             return self._fallback_chat_response(user, user_message)
         
         try:
@@ -53,11 +59,18 @@ class AIService:
                 "temperature": 0.7
             }
             
-            response = requests.post(self.api_url, json=payload, headers=headers)
+            print(f"[AIService] Making API request to: {self.api_url}")
+            print(f"[AIService] Model: {self.model}")
+            
+            response = requests.post(self.api_url, json=payload, headers=headers, timeout=30)
+            print(f"[AIService] Response status: {response.status_code}")
+            
             response.raise_for_status()
             
             result = response.json()
-            return result['choices'][0]['message']['content']
+            ai_response = result['choices'][0]['message']['content']
+            print(f"[AIService] Success! Response length: {len(ai_response)}")
+            return ai_response
         
         except Exception as e:
             print(f"NVIDIA API error: {e}")

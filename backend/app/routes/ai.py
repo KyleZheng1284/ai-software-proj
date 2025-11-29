@@ -4,6 +4,13 @@ from app.models import User
 
 bp = Blueprint('ai', __name__, url_prefix='/api/ai')
 
+
+@bp.route('/test', methods=['GET'])
+def test_route():
+    """Simple test route without JWT or external services"""
+    return {'status': 'ok', 'message': 'AI blueprint test route working'}
+
+
 def get_ai_service():
     """Lazy load AI service to avoid module-level instantiation issues"""
     from app.services.ai_service import AIService
@@ -13,29 +20,50 @@ def get_ai_service():
 @bp.route('/chat', methods=['POST'])
 @jwt_required()
 def chat():
+    import os
+    print(f"\n=== AI CHAT REQUEST ===")
+    print(f"NVIDIA_API_KEY set: {bool(os.environ.get('NVIDIA_API_KEY'))}")
+    print(f"NVIDIA_API_KEY length: {len(os.environ.get('NVIDIA_API_KEY', ''))}")
+    
     user_id = get_jwt_identity()
+    print(f"User ID: {user_id}")
+    
     user = User.query.get(user_id)
     
     if not user:
+        print("ERROR: User not found")
         return jsonify({'error': 'User not found'}), 404
     
+    print(f"User found: {user.username}")
+    
     data = request.get_json()
+    print(f"Request data: {data}")
     
     if not data or not data.get('message'):
+        print("ERROR: Message is required")
         return jsonify({'error': 'Message is required'}), 400
     
     try:
-        response = get_ai_service().chat_with_coach(
+        print("Calling AI service...")
+        ai_service = get_ai_service()
+        print(f"AI Service API Key set: {bool(ai_service.api_key)}")
+        
+        response = ai_service.chat_with_coach(
             user=user,
             user_message=data['message'],
             conversation_history=data.get('history', [])
         )
+        
+        print(f"AI Response received: {response[:100]}..." if len(response) > 100 else f"AI Response: {response}")
         
         return jsonify({
             'response': response,
             'message': 'Chat response generated successfully'
         }), 200
     except Exception as e:
+        import traceback
+        print(f"ERROR in AI chat: {str(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
         return jsonify({
             'error': 'Failed to generate response',
             'details': str(e)
