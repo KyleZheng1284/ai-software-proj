@@ -2,6 +2,32 @@ from datetime import datetime
 from app import db
 
 
+class PostLike(db.Model):
+    """Track which users liked which posts - prevents duplicate likes"""
+    __tablename__ = 'post_likes'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('community_posts.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Ensure a user can only like a post once
+    __table_args__ = (db.UniqueConstraint('post_id', 'user_id', name='unique_post_like'),)
+
+
+class ChallengeParticipant(db.Model):
+    """Track which users joined which challenges - prevents duplicate joins"""
+    __tablename__ = 'challenge_participants'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    challenge_id = db.Column(db.Integer, db.ForeignKey('challenges.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    joined_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Ensure a user can only join a challenge once
+    __table_args__ = (db.UniqueConstraint('challenge_id', 'user_id', name='unique_challenge_participant'),)
+
+
 class CommunityPost(db.Model):
     __tablename__ = 'community_posts'
     

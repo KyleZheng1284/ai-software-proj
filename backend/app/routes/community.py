@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
 from app import db
-from app.models import CommunityPost, Challenge, Comment
+from app.models import CommunityPost, Challenge, Comment, PostLike, ChallengeParticipant
 
 bp = Blueprint('community', __name__, url_prefix='/api/community')
 
@@ -53,12 +53,25 @@ def create_post():
 @bp.route('/posts/<int:post_id>/like', methods=['POST'])
 @jwt_required()
 def like_post(post_id):
+    user_id = get_jwt_identity()
     post = CommunityPost.query.get(post_id)
     
     if not post:
         return jsonify({'error': 'Post not found'}), 404
     
+    # Check if user already liked this post
+    existing_like = PostLike.query.filter_by(post_id=post_id, user_id=user_id).first()
+    if existing_like:
+        return jsonify({
+            'error': 'You have already liked this post',
+            'likes_count': post.likes_count
+        }), 400
+    
+    # Create the like record
+    like = PostLike(post_id=post_id, user_id=user_id)
     post.likes_count += 1
+    
+    db.session.add(like)
     db.session.commit()
     
     return jsonify({
@@ -149,12 +162,29 @@ def create_challenge():
 @bp.route('/challenges/<int:challenge_id>/join', methods=['POST'])
 @jwt_required()
 def join_challenge(challenge_id):
+    user_id = get_jwt_identity()
     challenge = Challenge.query.get(challenge_id)
     
     if not challenge:
         return jsonify({'error': 'Challenge not found'}), 404
     
+    # Check if user already joined this challenge
+    existing_participant = ChallengeParticipant.query.filter_by(
+        challenge_id=challenge_id, 
+        user_id=user_id
+    ).first()
+    
+    if existing_participant:
+        return jsonify({
+            'error': 'You have already joined this challenge',
+            'challenge': challenge.to_dict()
+        }), 400
+    
+    # Create the participant record
+    participant = ChallengeParticipant(challenge_id=challenge_id, user_id=user_id)
     challenge.participants_count += 1
+    
+    db.session.add(participant)
     db.session.commit()
     
     return jsonify({
