@@ -1,10 +1,13 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.services.ai_service import AIService
 from app.models import User
 
 bp = Blueprint('ai', __name__, url_prefix='/api/ai')
-ai_service = AIService()
+
+def get_ai_service():
+    """Lazy load AI service to avoid module-level instantiation issues"""
+    from app.services.ai_service import AIService
+    return AIService()
 
 
 @bp.route('/chat', methods=['POST'])
@@ -22,7 +25,7 @@ def chat():
         return jsonify({'error': 'Message is required'}), 400
     
     try:
-        response = ai_service.chat_with_coach(
+        response = get_ai_service().chat_with_coach(
             user=user,
             user_message=data['message'],
             conversation_history=data.get('history', [])
@@ -49,7 +52,7 @@ def get_recommendations():
         return jsonify({'error': 'User not found'}), 404
     
     try:
-        recommendations = ai_service.generate_recommendations(user)
+        recommendations = get_ai_service().generate_recommendations(user)
         
         return jsonify({
             'recommendations': recommendations,
@@ -72,7 +75,7 @@ def get_insights():
         return jsonify({'error': 'User not found'}), 404
     
     try:
-        insights = ai_service.analyze_patterns(user)
+        insights = get_ai_service().analyze_patterns(user)
         
         return jsonify({
             'insights': insights,
@@ -97,7 +100,7 @@ def get_meal_plan():
     days = request.args.get('days', 7, type=int)
     
     try:
-        meal_plan = ai_service.generate_meal_plan(user, days)
+        meal_plan = get_ai_service().generate_meal_plan(user, days)
         
         return jsonify({
             'meal_plan': meal_plan,
@@ -122,7 +125,7 @@ def get_workout_plan():
     days = request.args.get('days', 7, type=int)
     
     try:
-        workout_plan = ai_service.generate_workout_plan(user, days)
+        workout_plan = get_ai_service().generate_workout_plan(user, days)
         
         return jsonify({
             'workout_plan': workout_plan,
@@ -145,7 +148,7 @@ def get_motivational_message():
         return jsonify({'error': 'User not found'}), 404
     
     try:
-        message = ai_service.generate_motivational_message(user)
+        message = get_ai_service().generate_motivational_message(user)
         
         return jsonify({
             'message': message
