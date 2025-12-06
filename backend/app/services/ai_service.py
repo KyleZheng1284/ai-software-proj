@@ -9,7 +9,7 @@ class AIService:
     def __init__(self):
         self.api_key = os.environ.get('NVIDIA_API_KEY')
         self.api_url = "https://integrate.api.nvidia.com/v1/chat/completions"
-        self.model = "meta/llama-3.1-8b-instruct"
+        self.model = "meta/llama-3.1-70b-instruct"
         print(f"[AIService] Initialized with API key: {'SET' if self.api_key else 'NOT SET'}")
         print(f"[AIService] API URL: {self.api_url}")
         print(f"[AIService] Model: {self.model}")
