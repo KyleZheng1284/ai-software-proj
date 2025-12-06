@@ -62,7 +62,7 @@ class AIService:
             print(f"[AIService] Making API request to: {self.api_url}")
             print(f"[AIService] Model: {self.model}")
             
-            response = requests.post(self.api_url, json=payload, headers=headers, timeout=30)
+            response = requests.post(self.api_url, json=payload, headers=headers, timeout=60)
             print(f"[AIService] Response status: {response.status_code}")
             
             response.raise_for_status()
@@ -72,6 +72,12 @@ class AIService:
             print(f"[AIService] Success! Response length: {len(ai_response)}")
             return ai_response
         
+        except requests.exceptions.Timeout:
+            print(f"[AIService] TIMEOUT: NVIDIA API took too long to respond")
+            return "Sorry, I'm running into an error with the AI model. This is due to Render hosting on the free tier - the request timed out. Sorry for any inconvenience!"
+        except requests.exceptions.ConnectionError as e:
+            print(f"[AIService] CONNECTION ERROR: {e}")
+            return "Sorry, I'm running into an error with the AI model. This is due to Render hosting on the free tier. Sorry for any inconvenience!"
         except Exception as e:
             print(f"NVIDIA API error: {e}")
             print(f"Using model: {self.model}")
@@ -79,7 +85,7 @@ class AIService:
             if hasattr(e, 'response') and e.response is not None:
                 print(f"Response status: {e.response.status_code}")
                 print(f"Response text: {e.response.text}")
-            return self._fallback_chat_response(user, user_message)
+            return "Sorry, I'm running into an error with the AI model. This is due to Render hosting on the free tier. Sorry for any inconvenience!"
     
     def generate_recommendations(self, user) -> Dict[str, Any]:
         recent_activities = Activity.query.filter_by(user_id=user.id).order_by(Activity.date.desc()).limit(10).all()

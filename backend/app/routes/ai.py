@@ -64,10 +64,11 @@ def chat():
         import traceback
         print(f"ERROR in AI chat: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
+        # Return a friendly message instead of 500 error
         return jsonify({
-            'error': 'Failed to generate response',
-            'details': str(e)
-        }), 500
+            'response': "Sorry, I'm running into an error with the AI model. This is due to Render hosting on the free tier. Sorry for any inconvenience!",
+            'message': 'Using fallback response due to error'
+        }), 200
 
 
 @bp.route('/recommendations', methods=['GET'])
